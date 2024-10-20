@@ -1,26 +1,33 @@
-FROM continuumio/miniconda3
+# Use Python 3.11.9 as the base image
+FROM python:3.11.9-slim
 
-ARG OPENAI_API_KEY
-ENV OPENAI_API_KEY=${OPENAI_API_KEY}
+# Set the working directory
+WORKDIR /root
 
-ARG BING_API_KEY
-ENV BING_API_KEY=${BING_API_KEY}
 
-# 设置环境变量
-ENV PATH=/opt/conda/bin:$PATH
+# Install Git
+RUN apt-get update && apt-get install -y git && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 克隆git仓库
-RUN git clone https://github.com/InternLM/MindSearch.git /app
 
-WORKDIR /app
+RUN pip install --no-cache-dir \
+    duckduckgo_search==5.3.1b1 \
+    einops \
+    fastapi \
+    janus \
+    pyvis \
+    sse-starlette \
+    termcolor \
+    uvicorn \
+    griffe==0.48.0 \
+    python-dotenv \
+    lmdeploy
 
-# 创建并激活 fastapi 环境，并安装依赖包
-RUN conda create --name fastapi python=3.10 -y && \
-    conda run -n fastapi pip install -r requirements.txt && \
-    conda clean --all -f -y
+RUN pip install --no-cache-dir git+https://github.com/InternLM/lagent.git
 
-# 暴露 FastAPI 默认端口
-EXPOSE 8000
+COPY mindsearch /root/mindsearch
+
+EXPOSE 80
 
 # 启动 FastAPI 服务
-CMD ["conda", "run", "--no-capture-output", "-n", "fastapi", "uvicorn", "mindsearch.app:app", "--host", "0.0.0.0", "--port", "8002"]
+CMD ["python", "-m", "mindsearch.app","--lang", "en", "--host", "0.0.0.0", "--port", "80"]
+# Copy the mindsearch folder to the /root directory of the container
