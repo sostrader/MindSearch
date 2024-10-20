@@ -19,8 +19,7 @@ RUN pip install --no-cache-dir \
     termcolor \
     uvicorn \
     griffe==0.48.0 \
-    python-dotenv \
-    lmdeploy
+    python-dotenv 
 
 RUN pip install --no-cache-dir git+https://github.com/InternLM/lagent.git
 
